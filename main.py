@@ -13,42 +13,111 @@ if __name__ == '__main__':
     store.add("сок", 1)
 
 
-    user_str = input('Введите запрос: Доставить "количество" "наименование" из склад в магазин')
-    user_str_list = user_str.split(" ")
-    try:
-        user_str_list[1] = int(user_str_list[1])
-    except:
-        print("введите число")
-    if ("доставить") not in user_str_list[0].lower():
-        print("Введите 'доставить'")
-    elif ("магазин" and "склад") not in user_str_list[4].lower():
-        print("введите место назначения")
-    else:
+    def move_operation():
+        user_str = input('Введите запрос:\nзабрать количество наименование из склад/магазин\n'
+                         'или доставить количество наименование из склад в магазин/магазин в склад')
+        user_str_list = user_str.split(" ")
+        # print(user_str)
+        # print(user_str_list)
         r = Request(user_str)
-        print(r)
-        if "магазин" in r.from_:
-            print("Доставка возможна только со склада")
-        elif "склад" in r.from_:
-            if r.product in store.get_item():
-                if r.amount <= store.get_item()[r.product]:
-                    print("Нужное количество есть на складе")
-                    print("Курьер везет со склад в магазин")
-                    if sum(shop.get_item().values()) + int(r.amount) < shop.capacity:
-                        print(f"Курьер доставил {r.amount} {r.product} в магазин")
+        # print(r)
+
+        if len(user_str_list) < 5:
+            print("не верный запрос")
+            move_operation()
+
+        elif not user_str_list[1].isdigit():
+            print("введите число")
+            move_operation()
+
+        elif "доставить" not in user_str_list[0].lower() and "забрать" not in user_str_list[0].lower():
+            print("Введите 'доставить/забрать'")
+            move_operation()
+
+        elif "магазин" not in user_str_list[4].lower() and "склад" not in user_str_list[4].lower():
+            print("введите место назначения")
+            move_operation()
+
+        if user_str_list[0].lower() == "забрать":
+            if user_str_list[4].lower() == "склад":
+                if r.product in store.get_item():
+                    if r.amount <= store.get_item()[r.product]:
+                        print("Нужное количество есть на складе")
+                        print(f"Курьер забирает {r.amount} {r.product} из склад")
                         store.remove(r.product, r.amount)
-                        shop.add(r.product, r.amount)
+                    else:
+                        print("Не хватает на складе, попробуйте заказать меньше")
+                        move_operation()
+                else:
+                    print("Такого товара нет на складе")
+                    move_operation()
+
+        if user_str_list[0].lower() == "забрать":
+            if user_str_list[4].lower() == "магазин":
+                if r.product in shop.get_item():
+                    if r.amount <= shop.get_item()[r.product]:
+                        print("Нужное количество есть в магазине")
+                        print(f"Курьер забирает {r.amount} {r.product} из магазина")
+                        shop.remove(r.product, r.amount)
+                    else:
+                        print("Не хватает в магазине, попробуйте заказать меньше")
+                        move_operation()
+                else:
+                    print("Такого товара нет в магазине")
+                    move_operation()
+
+
+        if user_str_list[0].lower() == "доставить":
+            if user_str_list[4].lower() == "склад":
+                if r.product in store.get_item():
+                    if r.amount <= store.get_item()[r.product]:
+                        print("Нужное количество есть на складе")
+                        print("Курьер везет со склад в магазин")
+                        if sum(shop.get_item().values()) + int(r.amount) < shop.capacity:
+                            print(f"Курьер доставил {r.amount} {r.product} в магазин")
+                            store.remove(r.product, r.amount)
+                            shop.add(r.product, r.amount)
+
+                        else:
+                            print("В магазин недостаточно места, попобуйте что-то другое")
+                            move_operation()
 
                     else:
-                        print("В магазин недостаточно места, попобуйте что-то другое")
+                        print("Не хватает на складе, попробуйте заказать меньше")
+                        move_operation()
                 else:
-                    print("Не хватает на складе, попробуйте заказать меньше")
-            else:
-                print("Такого товара нет на складе")
+                    print("Такого товара нет на складе")
+                    move_operation()
 
-        print("В магазине хранится:")
-        for key, value in shop.items.items():
-            print(key, value)
+        if user_str_list[0].lower() == "доставить":
+            if user_str_list[4].lower() == "магазин":
+                if r.product in shop.get_item():
+                    if r.amount <= shop.get_item()[r.product]:
+                        print("Нужное количество есть в магазин")
+                        print("Курьер везет с магазина в склад")
+                        if sum(store.get_item().values()) + int(r.amount) < store.capacity:
+                            print(f"Курьер доставил {r.amount} {r.product} в склад")
+                            shop.remove(r.product, r.amount)
+                            store.add(r.product, r.amount)
 
-        print("На складе хранится:")
-        for key, value in store.items.items():
-            print(key, value)
+                        else:
+                            print("на складе недостаточно места, попобуйте что-то другое")
+                            move_operation()
+
+                    else:
+                        print("Не хватает в магазине, попробуйте заказать меньше")
+                        move_operation()
+                else:
+                    print("Такого товара нет в магазине")
+                    move_operation()
+
+
+    move_operation()
+
+    print("В магазине хранится:")
+    for key, value in shop.items.items():
+        print(key, value)
+
+    print("На складе хранится:")
+    for key, value in store.items.items():
+        print(key, value)
